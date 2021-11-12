@@ -118,7 +118,7 @@ def dfs(matrix_node, bonus, current, end, trace, result):
             matrix_node[x][y].visited = False
             trace.pop(-1)
     
-bonus_points, matrix = read_file('maze_map.txt')
+bonus_points, matrix = read_file('maze_2.txt')
 matrix_node = []
 start = []
 end = []
