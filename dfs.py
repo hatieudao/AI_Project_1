@@ -88,7 +88,7 @@ class Node_dfs:
         self.parent = None
         self.g = inf
 
-def dfs(matrix_node, current, end, trace, result):
+def dfs(matrix_node, bonus, current, end, trace, result):
   val = end.g
   if current.g >= val:
     return
@@ -109,11 +109,11 @@ def dfs(matrix_node, current, end, trace, result):
             continue
           else:
             matrix_node[x][y].parent = current
-            next_node.g = current.g + 1
+            next_node.g = current.g + bonus[x][y]
             matrix_node[x][y].g = next_node.g
             matrix_node[x][y].visited = True
             trace.append(current.data)
-            res = dfs(matrix_node, next_node, end, trace, result)
+            dfs(matrix_node, bonus, next_node, end, trace, result)
             matrix_node[x][y].g = inf
             matrix_node[x][y].visited = False
             trace.pop(-1)
@@ -125,20 +125,30 @@ end = []
 bonus = []
 for i in range(len(matrix)):
   matrix_node.append([])
+  bonus.append([])
   for j in range(len(matrix[i])):
     if matrix[i][j] == 'x':
       node = Node_dfs([i,j])
       node.visited = True
       matrix_node[i].append(node)
+      bonus[i].append(inf)
     elif matrix[i][j] == ' ':
       if i == 0 or i == len(matrix)-1 or j == 0 or j == (len(matrix[i])-1):
         end.extend([i, j])
       matrix_node[i].append(Node_dfs([i, j]))
+      bonus[i].append(1)
     elif matrix[i][j] == 'S':
       start.extend([i, j])
       node = Node_dfs([i,j])
       node.visited = True
       matrix_node[i].append(node)
+      bonus[i].append(0)
+    else:
+      matrix_node[i].append(Node_dfs([i, j]))
+      bonus[i].append(0)
+
+for point in bonus_points:
+  bonus[point[0]][point[1]] = point[2]
 
 start_node = Node_dfs(start)
 start_node.visited = True
@@ -146,7 +156,7 @@ start_node.g = 0
 end_node = Node_dfs(end)
 result =[start]
 trace = []
-dfs(matrix_node, start_node, end_node, trace, result)
+dfs(matrix_node, bonus, start_node, end_node, trace, result)
 route = result.append(end)
 print('Number of step:  ', end_node.g)
-visualize_maze(matrix, bonus, start, end, result)
+visualize_maze(matrix, bonus_points, start, end, result)
