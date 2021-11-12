@@ -1,6 +1,13 @@
 #!usr/bin/env python3
+from numpy import nextafter, random, result_type
+from math import inf
 import os
 import matplotlib.pyplot as plt
+import numpy as np
+from numpy.core.fromnumeric import trace
+
+
+# Draw map
 def visualize_maze(matrix, bonus, start, end, route=None):
     """
     Args:
@@ -44,7 +51,7 @@ def visualize_maze(matrix, bonus, start, end, route=None):
     if route:
         for i in range(len(route)-2):
             plt.scatter(route[i+1][1],-route[i+1][0],
-                        marker=direction[i],color='silver')
+                        marker=direction[i],color='#1dcc22')
 
     plt.text(end[1],-end[0],'EXIT',color='red',
          horizontalalignment='center',
@@ -58,6 +65,8 @@ def visualize_maze(matrix, bonus, start, end, route=None):
     
     for _, point in enumerate(bonus):
       print(f'Bonus point at position (x, y) = {point[0], point[1]} with point {point[2]}')
+
+#Read map
 def read_file(file_name: str = 'maze.txt'):
   f=open(file_name,'r')
   n_bonus_points = int(next(f)[:-1])
@@ -72,19 +81,72 @@ def read_file(file_name: str = 'maze.txt'):
 
   return bonus_points, matrix
 
+class Node_dfs:
+    def __init__(self, data):
+        self.visited = False
+        self.data = data
+        self.parent = None
+        self.g = inf
 
+def dfs(matrix_node, current, end, trace, result):
+  val = end.g
+  if current.g >= val:
+    return
+  if np.array_equal(current.data, end.data):
+    if val > current.g:
+      end.g = current.g
+      end.parent = current
+      result.clear()
+      result.extend(trace)
+  next_node = Node_dfs([-1,-1])
+  for i in range(-1, 2):
+      for j in range(-1, 2):
+        if abs(i) != abs(j):
+          x = current.data[0]+i
+          y = current.data[1]+j
+          next_node = Node_dfs([x,y])
+          if (x < 0) or (y < 0) or (x >= len(matrix_node)) or (y >= len(matrix_node[0])) or matrix_node[x][y].visited:
+            continue
+          else:
+            matrix_node[x][y].parent = current
+            next_node.g = current.g + 1
+            matrix_node[x][y].g = next_node.g
+            matrix_node[x][y].visited = True
+            trace.append(current.data)
+            res = dfs(matrix_node, next_node, end, trace, result)
+            matrix_node[x][y].g = inf
+            matrix_node[x][y].visited = False
+            trace.pop(-1)
+    
 bonus_points, matrix = read_file('maze_map.txt')
-print(f'The height of the matrix: {len(matrix)}')
-print(f'The width of the matrix: {len(matrix[0])}')
+matrix_node = []
+start = []
+end = []
+bonus = []
 for i in range(len(matrix)):
-    for j in range(len(matrix[0])):
-        if matrix[i][j]=='S':
-            start=(i,j)
+  matrix_node.append([])
+  for j in range(len(matrix[i])):
+    if matrix[i][j] == 'x':
+      node = Node_dfs([i,j])
+      node.visited = True
+      matrix_node[i].append(node)
+    elif matrix[i][j] == ' ':
+      if i == 0 or i == len(matrix)-1 or j == 0 or j == (len(matrix[i])-1):
+        end.extend([i, j])
+      matrix_node[i].append(Node_dfs([i, j]))
+    elif matrix[i][j] == 'S':
+      start.extend([i, j])
+      node = Node_dfs([i,j])
+      node.visited = True
+      matrix_node[i].append(node)
 
-        elif matrix[i][j]==' ':
-            if (i==0) or (i==len(matrix)-1) or (j==0) or (j==len(matrix[0])-1):
-                end=(i,j)
-                
-        else:
-            pass
-visualize_maze(matrix,bonus_points,start,end)
+start_node = Node_dfs(start)
+start_node.visited = True
+start_node.g = 0
+end_node = Node_dfs(end)
+result =[start]
+trace = []
+dfs(matrix_node, start_node, end_node, trace, result)
+route = result.append(end)
+print('Number of step:  ', end_node.g)
+visualize_maze(matrix, bonus, start, end, result)
