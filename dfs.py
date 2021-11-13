@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.core.fromnumeric import trace
 
+FILENAME = './maze/maze_1.txt'
 
 # Draw map
 def visualize_maze(matrix, bonus, start, end, route=None):
@@ -120,7 +121,7 @@ def dfs(matrix_node, bonus, current, end, result):
             matrix_node[x][y].visited = True
             dfs(matrix_node, bonus, next_node, end, result)
 
-bonus_points, matrix = read_file('./maze/maze_6.txt')
+bonus_points, matrix = read_file(FILENAME)
 matrix_node = []
 start = []
 end = []
