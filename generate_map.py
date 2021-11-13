@@ -1,13 +1,13 @@
 #!usr/bin/env python3
 from numpy import random
 
-W_RATIO = 0.25
+W_RATIO = 0.35
 W_RATIO2 = 0.2
 def write_map(name, n, m, maze, bonus_points):
   with open(name, 'w') as outfile:
     outfile.write(f'{len(bonus_points)}\n')
     for point in bonus_points:
-      outfile.write(f'{point[0]} {point[1]} {point[2]} \n')
+      outfile.write(f'{point[0]} {point[1]} {point[2]}\n')
     for line in maze:
       outfile.write(line+'\n')
 def gen_data(pos, n, m, b):
@@ -46,7 +46,12 @@ def gen_data(pos, n, m, b):
     maze.append(s)  
   
   for point in bonus_points:
-    maze[point[0]][point[1]] = '+'
+    x = point[0]
+    y = point[1]
+    s = maze[x]
+    s = list(s)
+    s[y] = '+'
+    maze[x] = ''.join(s)
 
   # Start point
   isContinue = True
@@ -66,6 +71,8 @@ def gen_data(pos, n, m, b):
   
   write_map(f'maze_{pos}.txt', n, m, maze, bonus_points)
   
-for i in range(3):
-  gen_data(i, 35, 15, 0)
+
+gen_data(5, 35, 15, 2)
+gen_data(6, 35, 15, 5)
+gen_data(7, 35, 15, 10)
 

@@ -34,7 +34,7 @@ def visualize_maze(matrix, bonus, start, end, route=None):
         direction.pop(0)
 
     #2. Drawing the map
-    ax=plt.figure(dpi=100).add_subplot(111)
+    ax=plt.figure(dpi=100,figsize=(10,10)).add_subplot(111)
 
     for i in ['top','bottom','right','left']:
         ax.spines[i].set_visible(False)
@@ -87,17 +87,22 @@ class Node_dfs:
         self.data = data
         self.parent = None
         self.g = inf
-
-def dfs(matrix_node, bonus, current, end, trace, result):
+def distance_between_2_nodes(node_a, node_b):
+    h = abs(node_a.data[0] - node_b.data[0]) + \
+        abs(node_a.data[1] - node_b.data[1])
+    return h
+def dfs(matrix_node, bonus, current, end, result):
   val = end.g
-  if current.g >= val:
+  if len(result) > 0:
     return
   if np.array_equal(current.data, end.data):
-    if val > current.g:
-      end.g = current.g
-      end.parent = current
-      result.clear()
-      result.extend(trace)
+    node = current
+    end.g = current.g
+    while node:
+      result.append(node.data)
+      node = matrix_node[node.data[0]][node.data[1]].parent
+    return
+    
   next_node = Node_dfs([-1,-1])
   for i in range(-1, 2):
       for j in range(-1, 2):
@@ -105,20 +110,17 @@ def dfs(matrix_node, bonus, current, end, trace, result):
           x = current.data[0]+i
           y = current.data[1]+j
           next_node = Node_dfs([x,y])
-          if (x < 0) or (y < 0) or (x >= len(matrix_node)) or (y >= len(matrix_node[0])) or matrix_node[x][y].visited:
+          if (x < 0) or (y < 0) or (x >= len(matrix_node)) or (y >= len(matrix_node[0])) \
+            or (matrix_node[x][y].visited):
             continue
           else:
             matrix_node[x][y].parent = current
             next_node.g = current.g + bonus[x][y]
             matrix_node[x][y].g = next_node.g
             matrix_node[x][y].visited = True
-            trace.append(current.data)
-            dfs(matrix_node, bonus, next_node, end, trace, result)
-            matrix_node[x][y].g = inf
-            matrix_node[x][y].visited = False
-            trace.pop(-1)
-    
-bonus_points, matrix = read_file('maze_2.txt')
+            dfs(matrix_node, bonus, next_node, end, result)
+
+bonus_points, matrix = read_file('./maze/maze_6.txt')
 matrix_node = []
 start = []
 end = []
@@ -154,9 +156,7 @@ start_node = Node_dfs(start)
 start_node.visited = True
 start_node.g = 0
 end_node = Node_dfs(end)
-result =[start]
-trace = []
-dfs(matrix_node, bonus, start_node, end_node, trace, result)
-route = result.append(end)
+result =[]
+dfs(matrix_node, bonus, start_node, end_node,  result)
 print('Number of step:  ', end_node.g)
-visualize_maze(matrix, bonus_points, start, end, result)
+visualize_maze(matrix, bonus_points, start, end, result[::-1])
